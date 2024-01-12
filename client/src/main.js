@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
+import App from "./App.js";
 import { BrowserRouter as BrowserRoute } from "react-router-dom";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import ChatProvider from "./Context/ChatProvider";
