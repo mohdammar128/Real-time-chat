@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
   socket.on("privateMessage", (data) => {
     // socket.join(data.roomId);
     // console.log(data.message, data.roomId);
-    socket.to(data.roomId).emit("recv", data.message);
+    socket.to(data.roomId).emit("recv", data);
   });
   // io.to();
 });

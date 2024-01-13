@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import SingleMessage from "./SingleMessage";
 import { socket } from "../../socket";
 import {
   Box,
@@ -8,13 +9,19 @@ import {
   InputGroup,
   Heading,
   Avatar,
-  UnorderedList,
-  ListItem,
 } from "@chakra-ui/react";
 
 const ChatBox = ({ selectedChat }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    socket.on("recv", (data) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
+    return () => socket.off("recv");
+  }, []);
 
   const onSendMessage = useCallback(
     (e) => {
@@ -22,18 +29,17 @@ const ChatBox = ({ selectedChat }) => {
         e.preventDefault();
         const messageToSend = e.target.value;
         setNewMessage(messageToSend);
+
         setMessages((prevMessages) => [
           ...prevMessages,
           {
+            id: JSON.parse(localStorage?.getItem("userInfo"))?.id,
             message: messageToSend,
+            roomId: selectedChat._id,
           },
         ]);
         socket.emit("privateMessage", {
-          receiver:
-            selectedChat.users[0].name ===
-            JSON.parse(localStorage.getItem("userInfo")).name
-              ? selectedChat.users[1].name
-              : selectedChat.users[0].name,
+          id: JSON.parse(localStorage?.getItem("userInfo"))?.id,
           message: messageToSend,
           roomId: selectedChat._id,
         });
@@ -44,14 +50,12 @@ const ChatBox = ({ selectedChat }) => {
     },
     [selectedChat]
   );
-
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
   useEffect(() => {
-    socket.on("recv", (message) => {
-      console.log(message);
-      setMessages((prevMessages) => [...prevMessages, { message }]);
-    });
-    return () => socket.off("recv");
-  }, []);
+    scrollToBottom();
+  }, [messages]);
 
   return (
     selectedChat && (
@@ -78,14 +82,15 @@ const ChatBox = ({ selectedChat }) => {
           overflowY={"auto"}
           padding={"4px"}
           margin={"20px"}
-          flexBasis={"60vh"}
+          height={"80vh"}
+          display={"flex"}
+          flexDir={"column"}
+          gap={"10px"}
         >
-          <UnorderedList>
-            {messages &&
-              messages.map((data, index) => (
-                <ListItem key={index}>{data.message}</ListItem>
-              ))}
-          </UnorderedList>
+          {messages.map((data, index) => (
+            <SingleMessage key={index} data={data} />
+          ))}
+          <div ref={messagesEndRef}></div>
         </Box>
         <Box>
           <InputGroup size="md">
