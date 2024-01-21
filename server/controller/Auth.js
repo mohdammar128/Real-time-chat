@@ -3,10 +3,9 @@ const bcrypt = require("bcrypt");
 const genrateToken = require("../config/genrateToken");
 const signUp = async (req, res) => {
   try {
-    console.log(req.body);
     const { name, email, password, profilePic } = req.body;
     let hashPassword = await bcrypt.hash(password, 10);
-    console.log(hashPassword);
+
     const newUser = new User({
       name,
       email,
@@ -15,27 +14,25 @@ const signUp = async (req, res) => {
     }); //it will create new user
     //How to save this new user into data base
     const saveNewUserDetails = await newUser.save();
-    console.log(saveNewUserDetails);
+
     res.json({
       sucess: true,
       message: "Succesfully saved",
       data: saveNewUserDetails,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({
       message: "Serve side error",
-      errorMessage: error,
+      errorMessage: error.message,
     });
   }
 };
 
 const signIn = async (req, res) => {
   try {
-    console.log(req.body);
     const { email, password } = req.body;
     const userDetails = await User.findOne({ email });
-    console.log(userDetails);
+
     if (
       !userDetails.email ||
       !(await bcrypt.compare(password, userDetails.password))

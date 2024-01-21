@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const handleSearchApi = async (search, user) => {
+export const handleSearchApi = async (search, user) => {
   const config = {
     headers: {
       Authorization: `Bearer ${user.token}`,
@@ -12,7 +12,7 @@ const handleSearchApi = async (search, user) => {
   );
   return data;
 };
-const accessChatApi = async (userId, user) => {
+export const accessChatApi = async (userId, user) => {
   console.log(userId);
   const config = {
     headers: {
@@ -27,4 +27,22 @@ const accessChatApi = async (userId, user) => {
   );
   return data;
 };
-export { handleSearchApi, accessChatApi };
+
+// export const createMessage = (content, chatId, user) => {
+//   try {
+//     const config = {
+//       headers: {
+//         "Content-type": "application/json",
+//         Authorization: `Bearer${user?.token}`,
+//       },
+//     };
+//     const response = axios.post(
+//       "http://localhost:4000/api/v1/message/create-message",
+//       { content, chatId },
+//       config
+//     );
+//     return response.json();
+//   } catch (error) {
+//     return new Error("Somthing went wrong while api calling");
+//   }
+// };

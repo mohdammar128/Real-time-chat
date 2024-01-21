@@ -1,10 +1,12 @@
 import { ListItem, Box } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 
 const SingleMessage = ({ data }) => {
+  // console.log(data.sender);
   return (
     <Box
       bgColor={
-        data.id === JSON.parse(localStorage?.getItem("userInfo"))?.id
+        data?.sender === JSON.parse(localStorage?.getItem("userInfo"))?.id
           ? "#25D366"
           : "#FFFFF"
       }
@@ -16,13 +18,13 @@ const SingleMessage = ({ data }) => {
       wordBreak={"break-word"}
       padding={"5px"}
       alignSelf={
-        data.id === JSON.parse(localStorage?.getItem("userInfo"))?.id
-          ? "flex-end"
-          : "flex-start"
+        data?.sender !== JSON.parse(localStorage?.getItem("userInfo"))?.id
+          ? "flex-start"
+          : "flex-end"
       }
       shadow={"lg"}
     >
-      {data.message}
+      {data?.content}
     </Box>
   );
 };

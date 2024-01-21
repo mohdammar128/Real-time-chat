@@ -9,15 +9,12 @@ import WrapChatBox from "../Component/ChatPage/WrapChatBox";
 const ChatPage = () => {
   const { user, selectedChat } = useChatState();
 
-  const sendMessage = async () => {
-    const response = await axios.post("https//:localhost/");
-  };
   return (
     <Box w={"100vw"}>
       {user && <SideDrawer />}
       <Box display={"flex"} gap={"1vw"} m={"10px"}>
         {user && <MyChat />}
-        {user && <WrapChatBox selectedChat={selectedChat} />}
+        {user && <WrapChatBox selectedChat={selectedChat} user={user} />}
       </Box>
     </Box>
   );

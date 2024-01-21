@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import SingleMessage from "./SingleMessage";
 import { socket } from "../../socket";
+import { jsonUserInfo } from "../../config";
 import {
   Box,
   Input,
@@ -11,10 +12,41 @@ import {
   Avatar,
 } from "@chakra-ui/react";
 
-const ChatBox = ({ selectedChat }) => {
+import axios from "axios";
+
+const ChatBox = ({ selectedChat, user }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
+
+  const onSendMessage = async (e) => {
+    setNewMessage(e.target.value);
+    if (e.key === "Enter" && newMessage) {
+      const messageToSend = {
+        content: newMessage,
+        chatId: selectedChat._id,
+      };
+
+      setNewMessage("");
+      const { data } = await axios.post(
+        "http://localhost:4000/api/v1/message/create-message",
+        messageToSend,
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+      console.log(data);
+      setMessages([...messages, data]);
+      socket.emit("privateMessage", {
+        id: jsonUserInfo,
+        message: messageToSend,
+        roomId: selectedChat._id,
+      });
+    }
+  };
 
   useEffect(() => {
     socket.on("recv", (data) => {
@@ -23,36 +55,32 @@ const ChatBox = ({ selectedChat }) => {
     return () => socket.off("recv");
   }, []);
 
-  const onSendMessage = useCallback(
-    (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const messageToSend = e.target.value;
-        setNewMessage(messageToSend);
-
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: JSON.parse(localStorage?.getItem("userInfo"))?.id,
-            message: messageToSend,
-            roomId: selectedChat._id,
-          },
-        ]);
-        socket.emit("privateMessage", {
-          id: JSON.parse(localStorage?.getItem("userInfo"))?.id,
-          message: messageToSend,
-          roomId: selectedChat._id,
-        });
-
-        // Clear the input field after sending the message
-        setNewMessage("");
-      }
-    },
-    [selectedChat]
-  );
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    fetchAllMessages();
+  }, [selectedChat]);
+
+  const fetchAllMessages = async () => {
+    if (!selectedChat) return;
+    try {
+      const { data } = await axios.get(
+        `http://localhost:4000/api/v1/message/${selectedChat._id}`,
+        // "http://localhost:4000/api/v1/message/65a91d8c585d3ef6aa956bfb",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+      setMessages([...messages, ...data]); // Assuming the messages are in the response.data
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -87,7 +115,7 @@ const ChatBox = ({ selectedChat }) => {
           flexDir={"column"}
           gap={"10px"}
         >
-          {messages.map((data, index) => (
+          {messages?.map((data, index) => (
             <SingleMessage key={index} data={data} />
           ))}
           <div ref={messagesEndRef}></div>

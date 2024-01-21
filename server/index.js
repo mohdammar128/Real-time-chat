@@ -3,6 +3,7 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const dbConnection = require("./config/db");
+
 require("dotenv").config();
 
 const app = express();
@@ -37,9 +38,7 @@ io.on("connection", (socket) => {
     socket.join(data.roomId);
   });
 
-  socket.on("privateMessage", (data) => {
-    // socket.join(data.roomId);
-    // console.log(data.message, data.roomId);
+  socket.on("privateMessage", async (data) => {
     socket.to(data.roomId).emit("recv", data);
   });
   // io.to();
